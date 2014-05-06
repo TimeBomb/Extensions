@@ -8,36 +8,31 @@ module.exports = function extensions() {
 	var attachSaveHandler = function attachSaveHandler(object, saveHandler) {
 		var alsoWatchNewProperties = true;
 		watch(object, function(property, action, difference, oldValue) {
-			saveHandler(property, object[property], oldValue);
+			var newValue = object[property];
+			saveHandler(property, newValue, oldValue);
 		}, 0, alsoWatchNewProperties);
 	};
 
-	var setSettings = function setSettings(object, saveHandler) {
-		loader.setSettingsContainer(object);
-		
-		return api;
-	};
-
 	var setSettingsSaveHandler = function setSettingsSaveHandler(saveHandler) {
-		attachSaveHandler(loader.settings, saveHandler);	
+		attachSaveHandler(loader.settings, saveHandler);
+
+		return api;
 	}
 
-	var setData = function setData(object, saveHandler) {
-		loader.setDataContainer(object);
+	var setDataSaveHandler = function setSettingsSaveHandler(saveHandler) {
+		attachSaveHandler(loader.data, saveHandler);
 
 		return api;
-	};
-
-	var setDataSaveHandler = function setSettingsSaveHandler(saveHandler) {
-		attachSaveHandler(loader.data, saveHandler);	
 	}
 
 	var api = {
 		create: factory.create,
 		autoload: autoloader.autoload,
 		setApi: loader.setApiContainer,
-		setSettings: setSettings,
-		setData: setData,
+		setSettings: loader.setSettingsContainer,
+		setData: loader.setDataContainer,
+		setSettingsSaveHandler: setSettingsSaveHandler,
+		setDataSaveHandler: setDataSaveHandler,
 		loader: loader,
 		container: container
 	};
