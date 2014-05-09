@@ -1,8 +1,8 @@
 module.exports = function extensions() {
-	var factory = require('extensionFactory.js')();
-	var container = require('extensionContainer.js')();
-	var loader = require('extensionLoader.js')(container);
-	var autoloader = require('extensionAutolader.js')(loader);
+	var factory = require('./extensionFactory.js')();
+	var container = require('./extensionContainer.js')();
+	var loader = require('./extensionLoader.js')(container);
+	var autoloader = require('./extensionAutoloader.js')(loader);
 	var watch = require('watchjs').watch;
 
 	var attachSaveHandler = function attachSaveHandler(object, saveHandler) {
@@ -27,14 +27,14 @@ module.exports = function extensions() {
 
 	var api = {
 		create: factory.create,
-		autoload: autoloader.autoload,
-		setApi: loader.setApiContainer,
-		setSettings: loader.setSettingsContainer,
-		setData: loader.setDataContainer,
+		setApi: loader.setApi,
+		setSettings: loader.setSettings,
+		setData: loader.setData,
 		setSettingsSaveHandler: setSettingsSaveHandler,
 		setDataSaveHandler: setDataSaveHandler,
 		loader: loader,
+		autoloader: autoloader,
 		container: container
 	};
 	return api;
-};
+}();

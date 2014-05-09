@@ -50,7 +50,7 @@ module.exports = function extensionLoader(extensionContainer) {
 
 	var load = function load(extension) {
 		var dependsOn = extension.depends;
-		if (dependsOn.length > 0) {
+		if (dependsOn && dependsOn.length > 0) {
 			for (var i = 0, len = dependsOn.length; i < len; i++) {
 				var dependencyId = dependsOn[i];
 				var dependencyExists = extensionContainer.exists(dependencyId);
@@ -69,6 +69,7 @@ module.exports = function extensionLoader(extensionContainer) {
 		loadApi(extension.id);
 		loadSettings(extension.id);
 		loadData(extension.id);
+		extension.loaded = true;
 
 		return api;
 	};

@@ -20,16 +20,17 @@ module.exports = function extensionContainer() {
 		}
 
 		return extensions[id];
-	}
+	};
 
 	var exists = function exists(id) {
 		return extensions.hasOwnProperty(id);
-	}
+	};
 
 	var api = {
-		add: add
+		add: add,
 		get: get,
-		all: extensions
+		all: extensions,
+		exists: exists
 	};
 	return api;
 };
