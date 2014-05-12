@@ -5,5 +5,8 @@ module.exports = {
 		works: function() {
 			console.log('You made it work! Here is a cat:\nOk no cat, but yay.');
 		}
+	},
+	data: {
+		test: 'hello'
 	}
 };

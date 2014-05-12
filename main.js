@@ -1,13 +1,15 @@
 module.exports = function extensions() {
-	var factory = require('./extensionFactory.js')();
-	var container = require('./extensionContainer.js')();
-	var loader = require('./extensionLoader.js')(container);
-	var autoloader = require('./extensionAutoloader.js')(loader);
+	var fullPath = require('path').resolve;
+	var container = require(fullPath('extensionContainer.js'))();
+	var loader = require(fullPath('extensionLoader.js'))(container);
+	var autoloader = require(fullPath('extensionAutoloader.js'))(loader);
+	// TODO: Watchjs doesn't seem to work; figure it out and replace if necessary
 	var watch = require('watchjs').watch;
 
 	var attachSaveHandler = function attachSaveHandler(object, saveHandler) {
 		var alsoWatchNewProperties = true;
 		watch(object, function(property, action, difference, oldValue) {
+			console.log('test');
 			var newValue = object[property];
 			saveHandler(property, newValue, oldValue);
 		}, 0, alsoWatchNewProperties);
@@ -26,15 +28,12 @@ module.exports = function extensions() {
 	}
 
 	var api = {
-		create: factory.create,
+		loadFolder: autoloader.loadFolder,
 		setApi: loader.setApi,
 		setSettings: loader.setSettings,
 		setData: loader.setData,
 		setSettingsSaveHandler: setSettingsSaveHandler,
 		setDataSaveHandler: setDataSaveHandler,
-		loader: loader,
-		autoloader: autoloader,
-		container: container
 	};
 	return api;
 }();

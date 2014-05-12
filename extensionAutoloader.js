@@ -1,27 +1,48 @@
 module.exports = function extensionAutoloader(extensionLoader) {
 	var fs = require('fs');
+	var fullPath = require('path').resolve;
 	var mainExtensionFileName = 'main.js';
 
-	// TODO: There is probably some path cross-platform path builder using fs. Use that everywhere rather than hardcode forward slashes - /
 	var getExtensionFromFile = function getExtensionFromFile(filePath) {
-		var mainExtensionFilePath = '/' + mainExtensionFileName;
-		var extensionFile = filePath + mainExtensionFilePath;
+		var extensionFile = fullPath(filePath, mainExtensionFileName);
 		var isValidExtension = fs.existsSync(extensionFile);
-
 		if (!isValidExtension) {
 			return false;
 		}
 		return require(extensionFile);
 	};
 
-	// TODO: Rework to load dependencies in a different way, as this way is inefficient and can lead to infinite loops
-	var loadListOfExtensions = function loadArray(extensionsList, extensionDirectory) {
-		var loadLater = [];
+	var tryLoadExtension = function tryLoadExtension(extension, loadAfter) {
+		try {
+			extensionLoader.load(extension);
+			if (loadAfter[extension.id] && loadAfter[extension.id].length > 0) {
+				for (var i = 0, length = loadAfter[extension.id].length; i < length; i++) {
+					var extensionToLoad = loadAfter[extension.id].splice(i)[0];
+					if (loadAfter[extension.id].length === 0) {
+						delete loadAfter[extension.id];
+					}
+					tryLoadExtension(extensionToLoad, loadAfter);
+				}
+			}
+		} catch (error) {
+			if (!extension.depends) {
+				throw '3: ' + error;
+			}
+			for (var i = 0, length = extension.depends.length; i < length; i++) {
+				var dependencyId = extension.depends[i];
+				loadAfter[dependencyId] = loadAfter[dependencyId] || [];
+				loadAfter[dependencyId].push(extension);
+			}
+		}
+	};
+
+	var loadListOfExtensions = function loadListOfExtensions(extensionsList, extensionDirectory) {
+		var loadAfter = {};
 		for (var i = 0, length = extensionsList.length; i < length; i++) {
 			var extension = extensionsList[i];
 			var extensionIsFolder = typeof extension === 'string';
 			if (extensionIsFolder) {
-				var extensionPath = extensionDirectory + '/' + extension;
+				var extensionPath = fullPath(extensionDirectory, extension);
 				extension = getExtensionFromFile(extensionPath);
 				var invalidExtensionFile = extension === false;
 				if (invalidExtensionFile) {
@@ -29,25 +50,17 @@ module.exports = function extensionAutoloader(extensionLoader) {
 				}
 			}
 
-			try {
-				extensionLoader.load(extension);
-				// Testing badly, like humans do...
-				if (extension.api && extension.api.works) {
-					extension.api.works();
-				}
-			} catch (error) {
-				loadLater.push(extension);
-			}
+			tryLoadExtension(extension, loadAfter);
 		}
-
-		if (loadLater.length > 0)  {
-			loadListOfExtensions(loadLater);
+		var unloadedExtensions = Object.keys(loadAfter);
+		if (unloadedExtensions.length > 0) {
+			throw '2: Unable to load some extensions due to the following dependencies missing: ' + unloadedExtensions;
 		}
 	};
 
-	var loadAll = function loadAll(extensionDirectory) {
+	var loadFolder = function loadFolder(extensionDirectory) {
 		if (!fs.existsSync(extensionDirectory)) {
-			throw 'Unable to load all extensions in nonexistent folder "' + extensionDirectory + '".';
+			throw '1: Unable to load all extensions in nonexistent folder "' + extensionDirectory + '".';
 		}
 
 		var extensionDirectoryFiles = fs.readdirSync(extensionDirectory);
@@ -56,7 +69,7 @@ module.exports = function extensionAutoloader(extensionLoader) {
 		
 
 	var api = {
-		loadAll: loadAll
+		loadFolder: loadFolder
 	};
 	return api;
 };

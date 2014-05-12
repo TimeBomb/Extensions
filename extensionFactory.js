@@ -1,3 +1,4 @@
+// TODO: Probably don't need this anywhere, decide and remove it
 module.exports = function extensionFactory() {
 	var Extension = function Extension() {
 		return {

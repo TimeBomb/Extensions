@@ -23,27 +23,27 @@ module.exports = function extensionLoader(extensionContainer) {
 
 	var loadApi = function loadApi(extensionId) {
 		var extension = extensionContainer.get(extensionId);
-		var extensionApi = extension.api;
+		var extensionApi = extension.api || {};
 
-		apiContainer.extensionId = extensionApi;
+		apiContainer[extensionId] = extensionApi;
 
 		return api;
 	};
 
 	var loadSettings = function loadData(extensionId) {
 		var extension = extensionContainer.get(extensionId);
-		var extensionSettings = extension.settings;
+		var extensionSettings = extension.settings || {};
 
-		settingsContainer.extensionId = extensionSettings;
+		settingsContainer[extensionId] = extensionSettings;
 
 		return api;
 	};
 
 	var loadData = function loadData(extensionId) {
 		var extension = extensionContainer.get(extensionId);
-		var extensionData = extension.data;
+		var extensionData = extension.data || {};
 
-		dataContainer.extensionId = extensionData;
+		dataContainer[extensionId] = extensionData;
 
 		return api;
 	};
@@ -55,12 +55,12 @@ module.exports = function extensionLoader(extensionContainer) {
 				var dependencyId = dependsOn[i];
 				var dependencyExists = extensionContainer.exists(dependencyId);
 				if (!dependencyExists) {
-					throw 'Unable to load "' + extension.id + '". Dependency "' + dependencyId + '" not found.';
+					throw '1: Unable to load "' + extension.id + '". Dependency "' + dependencyId + '" not found.';
 				}
 
 				var dependencyLoaded = extensionContainer.get(dependencyId).loaded;
 				if (!dependencyLoaded) {
-					throw 'Unable to load "' + extension.id + '". Dependency "' + dependencyId + '" not loaded.';
+					throw '2: Unable to load "' + extension.id + '". Dependency "' + dependencyId + '" not loaded.';
 				}
 			}
 		}
